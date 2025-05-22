@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import joblib
 from sentence_transformers import SentenceTransformer
@@ -7,16 +9,23 @@ import pandas as pd
 
 app = FastAPI(title="Multi-label Movie Genre Recommender")
 
+# Mount static files and templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
 class MovieOverview(BaseModel):
     overview: str
 
+# Load models - adjust paths based on your actual file structure
+try:
+    model = joblib.load("multi_label_model.pkl")
+    mlb = joblib.load("multi_label_binarizer.pkl")
+    movies_df = joblib.load("movies_data.pkl")
+except Exception as e:
+    print(f"Error loading models: {e}")
+    raise
 
-model = joblib.load("app/multi_label_model.pkl")
-binarizer = joblib.load("app/multi_label_binarizer.pkl")
-movies_data = joblib.load("app/movies_data.pkl")
-
-
-# Load SentenceTransformer fresh (don’t use pickled one)
+# Load SentenceTransformer
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def recommend_by_genres(predicted_genres, movies_df, top_k=5):
@@ -48,3 +57,7 @@ async def predict_genres(movie: MovieOverview):
         "predicted_genres": list(genres),
         "recommendations": recommendations
     }
+
+@app.get("/")
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
