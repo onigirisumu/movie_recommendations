@@ -1,7 +1,9 @@
 fastapi
-uvicorn[standard]
+uvicorn
 sentence-transformers
 scikit-learn
 joblib
 pandas
 numpy
+python-multipart
+jinja2
