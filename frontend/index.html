@@ -1,73 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <title>Movie Genre Recommender</title>
+    <title>Movie Recommender</title>
     <style>
-        body { max-width: 600px; margin: 2rem auto; font-family: Arial, sans-serif; }
-        textarea { width: 100%; height: 100px; }
-        button { margin-top: 1rem; padding: 10px 20px; background: #6200ea; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #result { margin-top: 1rem; white-space: pre-wrap; }
-        .movie-card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; }
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+        textarea { width: 100%; height: 100px; padding: 10px; }
+        button { padding: 10px 20px; background: #4285f4; color: white; border: none; margin-top: 10px; }
+        .movie { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .genre { display: inline-block; background: #e0e0e0; padding: 3px 8px; margin-right: 5px; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <h1>Movie Genre Recommender</h1>
-    <p>Describe what kind of movie you'd like to watch:</p>
-    <textarea id="overview" placeholder="Example: I want a scary horror movie with some comedy elements..."></textarea>
-    <button onclick="getGenres()">Get Recommendations</button>
-    <div id="result"></div>
+    <h1>Movie Recommendation</h1>
+    <textarea id="input" placeholder="Describe what you want to watch..."></textarea>
+    <button onclick="getMovies()">Get Recommendations</button>
+    <div id="results"></div>
 
     <script>
-        async function getGenres() {
-            const overview = document.getElementById('overview').value.trim();
-            if (!overview) {
-                alert('Please enter a description of the movie you want!');
-                return;
-            }
+        async function getMovies() {
+            const input = document.getElementById('input').value;
+            if (!input.trim()) return alert("Please enter something!");
             
-            document.getElementById('result').innerHTML = '<p>Loading recommendations...</p>';
-
+            document.getElementById('results').innerHTML = "<p>Loading...</p>";
+            
             try {
-                // Use relative path for local development
-                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                    ? '/predict/' 
-                    : '/predict/';
-                
-                const response = await fetch(apiUrl, {
+                const response = await fetch('/predict', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ overview })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ overview: input })
                 });
-
-                if (!response.ok) throw new Error('API error: ' + response.status);
-
+                
                 const data = await response.json();
-                let html = `<h2>Recommended for you:</h2>`;
+                let html = `<h2>Recommended Movies</h2>`;
                 
-                if (!data.predicted_genres || data.predicted_genres.length === 0) {
-                    html += `<p>No specific genres predicted. Try being more specific.</p>`;
-                } else {
-                    html += `<p><strong>Predicted genres:</strong> ${data.predicted_genres.join(', ')}</p>`;
-                }
-
-                if (data.recommendations && data.recommendations.length > 0) {
-                    data.recommendations.forEach((rec, i) => {
-                        html += `
-                        <div class="movie-card">
-                            <h3>Recommendation ${i+1}</h3>
-                            <p>${rec.overview}</p>
-                            <p><em>Genres: ${rec.genres.join(', ')}</em></p>
-                        </div>`;
-                    });
-                } else {
-                    html += `<p>No specific recommendations found. Try a different description.</p>`;
+                if (data.genres.length) {
+                    html += `<p>Genres: `;
+                    data.genres.forEach(g => html += `<span class="genre">${g}</span>`);
+                    html += `</p>`;
                 }
                 
-                document.getElementById('result').innerHTML = html;
-            } catch (e) {
-                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${e.message}</p>`;
-                console.error(e);
+                data.movies.forEach(movie => {
+                    html += `<div class="movie">
+                        <p>${movie.overview}</p>
+                        <p>Genres: ${movie.genres.join(', ')}</p>
+                    </div>`;
+                });
+                
+                document.getElementById('results').innerHTML = html;
+            } catch (err) {
+                document.getElementById('results').innerHTML = 
+                    `<p style="color: red">Error: ${err.message}</p>`;
             }
         }
     </script>
