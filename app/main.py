@@ -10,10 +10,11 @@ app = FastAPI(title="Multi-label Movie Genre Recommender")
 class MovieOverview(BaseModel):
     overview: str
 
-# Load model files once
-model = joblib.load("multi_label_model.pkl")
-mlb = joblib.load("multi_label_binarizer.pkl")
-movies_df = pd.read_pickle("movies_data.pkl")
+
+model = joblib.load("app/multi_label_model.pkl")
+binarizer = joblib.load("app/multi_label_binarizer.pkl")
+movies_data = joblib.load("app/movies_data.pkl")
+
 
 # Load SentenceTransformer fresh (don’t use pickled one)
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
