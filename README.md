@@ -27,18 +27,20 @@ This project is a movie recommendation web application that predicts movie genre
 📁 Project Structure
 
 project/
-│
-├── backend/
-│   ├── main.py
-│   ├── multi_label_model.pkl
-│   ├── multi_label_binarizer.pkl
-│   └── movies_data.pkl
-│
-├── frontend/
-│   └── index.html
-│
-├── requirements.txt
-└── README.md
+
+backend/
+main.py
+multi_label_model.pkl
+multi_label_binarizer.pkl
+movies_data.pkl
+
+
+frontend/
+index.html
+
+requirements.txt
+
+README.md
 
 ⸻
 
